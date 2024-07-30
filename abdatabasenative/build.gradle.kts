@@ -1,5 +1,5 @@
 plugins {
-    alias(libs.plugins.android.application)
+    id(libs.plugins.android.library.get().pluginId)
 }
 
 android {
@@ -7,11 +7,8 @@ android {
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "pl.allblue.abdatabasenative"
         minSdk = 24
         targetSdk = 34
-        versionCode = 1
-        versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
