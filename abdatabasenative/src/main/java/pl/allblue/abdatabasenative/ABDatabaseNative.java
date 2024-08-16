@@ -10,6 +10,9 @@ import java.util.List;
 
 import pl.allblue.abdatabase.ABDatabase;
 import pl.allblue.abdatabase.ColumnInfo;
+import pl.allblue.abdatabase.Result;
+import pl.allblue.abdatabase.SelectColumnType;
+import pl.allblue.abdatabase.Transaction;
 import pl.allblue.abnative.ActionsSet;
 import pl.allblue.abnative.NativeApp;
 
@@ -30,7 +33,7 @@ public class ABDatabaseNative
             .addNativeCallback("GetTableColumnInfos",
                     (args, resultCallback) -> {
                 self.db.getTableColumnInfos(args.getString("tableName"),
-                        new ABDatabase.TableColumnInfosResultCallback() {
+                        new Result.OnTableColumnInfos() {
                     @Override
                     public void onResult(ColumnInfo[] columnInfos) {
                         try {
@@ -79,7 +82,7 @@ public class ABDatabaseNative
 //            })
 
             .addNativeCallback("GetTableNames", (args, resultCallback) -> {
-                this.db.getTableNames(new ABDatabase.TableNamesResultCallback() {
+                this.db.getTableNames(new Result.OnTableNames() {
                     @Override
                     public void onResult(String[] tableNames) {
                         JSONObject result = new JSONObject();
@@ -113,7 +116,7 @@ public class ABDatabaseNative
                     (args, resultCallback) -> {
                 this.db.transaction_Finish(args.getInt("transactionId"),
                         args.getBoolean("commit"),
-                        new ABDatabase.Transaction_FinishResultCallback() {
+                        new Transaction.OnFinish() {
                     @Override
                     public void onError(Exception e) {
                         Log.w("ABDataDatabase", e.getMessage(), e);
@@ -169,7 +172,7 @@ public class ABDatabaseNative
             .addNativeCallback("Transaction_IsAutocommit",
                     (args, resultCallback) -> {
                 this.db.transaction_IsAutocommit(
-                        new ABDatabase.IsAutocommitResultCallback() {
+                        new Transaction.OnIsAutocommit() {
                     @Override
                     public void onError(Exception e) {
                         resultCallback.onError(e);
@@ -210,7 +213,7 @@ public class ABDatabaseNative
             .addNativeCallback("Transaction_Start",
                     (args, resultCallback) -> {
                 this.db.transaction_Start(
-                        new ABDatabase.Transaction_StartResultCallback() {
+                        new Transaction.OnStart() {
                     @Override
                     public void onError(Exception e) {
                         Log.w("ABDataDatabase", e.getMessage(), e);
@@ -271,7 +274,7 @@ public class ABDatabaseNative
                 this.db.query_Execute(args.getString("query"),
                         args.isNull("transactionId") ?
                         null : args.getInt("transactionId"),
-                        new ABDatabase.VoidResultCallback_ThrowsException() {
+                        new Result.OnResult_ThrowsException() {
 
                     @Override
                     public void onError(Exception e) {
@@ -329,14 +332,18 @@ public class ABDatabaseNative
             .addNativeCallback("Query_Select", (args, resultCallback) -> {
                 JSONArray columnTypes_JSON = args.getJSONArray(
                         "columnTypes");
-                String[] columnTypes = new String[columnTypes_JSON.length()];
-                for (int i = 0; i < columnTypes.length; i++)
-                    columnTypes[i] = columnTypes_JSON.getString(i);
+
+                SelectColumnType[] columnTypes =
+                        new SelectColumnType[columnTypes_JSON.length()];
+                for (int i = 0; i < columnTypes.length; i++) {
+                    columnTypes[i] = SelectColumnType.fromIndex(
+                            columnTypes_JSON.getInt(i));
+                }
 
                 this.db.query_Select(args.getString("query"), columnTypes,
                         args.isNull("transactionId") ?
                         null : args.getInt("transactionId"),
-                        new ABDatabase.SelectResultCallback() {
+                        new Result.OnSelect() {
                     @Override
                     public void onError(Exception e) {
                         Log.w("ABDataDatabase", e.getMessage(), e);
@@ -409,6 +416,18 @@ public class ABDatabaseNative
 //            });
 
         nativeApp.addActionsSet("ABDatabase", this.nativeActions);
+    }
+
+
+    private SelectColumnType[] parseColumnTypes(
+            int[] columnTypes_Indexes) {
+
+        SelectColumnType[] columnTypes =
+                new SelectColumnType[columnTypes_Indexes.length];
+        for (int i = 0; i < columnTypes.length; i++)
+            columnTypes[i] = SelectColumnType.fromIndex(columnTypes_Indexes[i]);
+
+        return columnTypes;
     }
 
 }
