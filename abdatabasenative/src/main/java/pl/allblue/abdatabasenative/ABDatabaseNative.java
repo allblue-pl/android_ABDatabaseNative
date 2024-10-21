@@ -23,17 +23,22 @@ public class ABDatabaseNative
     public ActionsSet nativeActions = null;
 
     public ABDatabaseNative(ABDatabase db,
-            NativeApp nativeApp)
-    {
+            NativeApp nativeApp) {
         ABDatabaseNative self = this;
         this.db = db;
 
         this.nativeActions = new ActionsSet()
-
             .addNativeCallback("GetTableColumnInfos",
                     (args, resultCallback) -> {
                 self.db.getTableColumnInfos(args.getString("tableName"),
+                        args.getInt("transactionId"),
                         new Result.OnTableColumnInfos() {
+                    @Override
+                    public void onError(Exception e) {
+                        Log.w("ABDataDatabase", e.getMessage(), e);
+                        resultCallback.onError(e);
+                    }
+
                     @Override
                     public void onResult(ColumnInfo[] columnInfos) {
                         try {
@@ -49,7 +54,6 @@ public class ABDatabaseNative
                                 columnInfos_Json.put(columnInfo);
 
                                 result.put("columnInfos", columnInfos_Json);
-                                result.put("error", JSONObject.NULL);
                             }
 
                             resultCallback.onResult(result);
@@ -82,7 +86,14 @@ public class ABDatabaseNative
 //            })
 
             .addNativeCallback("GetTableNames", (args, resultCallback) -> {
-                this.db.getTableNames(new Result.OnTableNames() {
+                this.db.getTableNames(args.getInt("transactionId"),
+                        new Result.OnTableNames() {
+                    @Override
+                    public void onError(Exception e) {
+                        Log.w("ABDataDatabase", e.getMessage(), e);
+                        resultCallback.onError(e);
+                    }
+
                     @Override
                     public void onResult(String[] tableNames) {
                         JSONObject result = new JSONObject();
@@ -91,7 +102,6 @@ public class ABDatabaseNative
                             JSONArray tableNames_JSON = new JSONArray(tableNames);
 
                             result.put("tableNames", tableNames_JSON);
-                            result.put("error", JSONObject.NULL);
                         } catch (JSONException e) {
                             resultCallback.onError(e);
                             return;
@@ -120,32 +130,12 @@ public class ABDatabaseNative
                     @Override
                     public void onError(Exception e) {
                         Log.w("ABDataDatabase", e.getMessage(), e);
-                        JSONObject result = new JSONObject();
-
-                        try {
-                            result.put("error", e.getMessage());
-                        } catch (JSONException e_JSON) {
-                            Log.e("ABDataDatabase", e_JSON.getMessage(),
-                                    e_JSON);
-                            resultCallback.onError(e);
-                            return;
-                        }
-
-                        resultCallback.onResult(result);
+                        resultCallback.onError(e);
                     }
 
                     @Override
                     public void onResult() {
-                        JSONObject result = new JSONObject();
-
-                        try {
-                            result.put("error", JSONObject.NULL);
-                        } catch (JSONException e) {
-                            resultCallback.onError(e);
-                            return;
-                        }
-
-                        resultCallback.onResult(result);
+                        resultCallback.onResult(null);
                     }
                 });
             })
@@ -175,6 +165,7 @@ public class ABDatabaseNative
                         new Transaction.OnIsAutocommit() {
                     @Override
                     public void onError(Exception e) {
+                        Log.w("ABDataDatabase", e.getMessage(), e);
                         resultCallback.onError(e);
                     }
 
@@ -186,7 +177,6 @@ public class ABDatabaseNative
                             result.put("transactionId",
                                     transactionId == null ?
                                     JSONObject.NULL : transactionId);
-                            result.put("error", JSONObject.NULL);
                         } catch (Exception e) {
                             resultCallback.onError(e);
                             return;
@@ -217,19 +207,7 @@ public class ABDatabaseNative
                     @Override
                     public void onError(Exception e) {
                         Log.w("ABDataDatabase", e.getMessage(), e);
-                        JSONObject result = new JSONObject();
-
-                        try {
-                            result.put("transactionId", JSONObject.NULL);
-                            result.put("error", e.getMessage());
-                        } catch (JSONException e_JSON) {
-                            Log.e("ABDataDatabase", e_JSON.getMessage(),
-                                    e_JSON);
-                            resultCallback.onError(e);
-                            return;
-                        }
-
-                        resultCallback.onResult(result);
+                        resultCallback.onError(e);
                     }
 
                     @Override
@@ -238,7 +216,6 @@ public class ABDatabaseNative
 
                         try {
                             result.put("transactionId", transactionId);
-                            result.put("error", JSONObject.NULL);
                         } catch (JSONException e) {
                             resultCallback.onError(e);
                         }
@@ -279,32 +256,12 @@ public class ABDatabaseNative
                     @Override
                     public void onError(Exception e) {
                         Log.w("ABDataDatabase", e.getMessage(), e);
-                        JSONObject result = new JSONObject();
-
-                        try {
-                            result.put("error", e.getMessage());
-                        } catch (JSONException e_JSON) {
-                            Log.e("ABDataDatabase", e_JSON.getMessage(),
-                                    e_JSON);
-                            resultCallback.onError(e);
-                            return;
-                        }
-
-                        resultCallback.onResult(result);
+                        resultCallback.onError(e);
                     }
 
                     @Override
                     public void onResult() {
-                        JSONObject result = new JSONObject();
-
-                        try {
-                            result.put("error", JSONObject.NULL);
-                        } catch (Exception e) {
-                            resultCallback.onError(e);
-                            return;
-                        }
-
-                        resultCallback.onResult(result);
+                        resultCallback.onResult(null);
                     }
                 });
             })
@@ -347,20 +304,7 @@ public class ABDatabaseNative
                     @Override
                     public void onError(Exception e) {
                         Log.w("ABDataDatabase", e.getMessage(), e);
-
-                        JSONObject result = new JSONObject();
-
-                        try {
-                            result.put("rows", JSONObject.NULL);
-                            result.put("error", e.getMessage());
-                        } catch (JSONException e_JSON) {
-                            Log.e("ABDataDatabase", e_JSON.getMessage(),
-                                    e_JSON);
-                            resultCallback.onError(e);
-                            return;
-                        }
-
-                        resultCallback.onResult(result);
+                        resultCallback.onError(e);
                     }
 
                     @Override
@@ -373,7 +317,6 @@ public class ABDatabaseNative
 
                         try {
                             result.put("rows", rows_JSON);
-                            result.put("error", JSONObject.NULL);
                         } catch (Exception e) {
                             resultCallback.onError(e);
                             return;
