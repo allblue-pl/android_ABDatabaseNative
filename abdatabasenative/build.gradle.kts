@@ -4,11 +4,10 @@ plugins {
 
 android {
     namespace = "pl.allblue.abdatabasenative"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         minSdk = 24
-//        targetSdk = 34
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
