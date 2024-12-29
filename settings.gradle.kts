@@ -20,5 +20,4 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "ABDatabaseNative"
-include(":app")
 include(":abdatabasenative")

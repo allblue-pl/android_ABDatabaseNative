@@ -25,17 +25,21 @@ android {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
+    buildFeatures {
+        buildConfig = true
+        viewBinding = true
+    }
 }
 
 dependencies {
+    implementation(project(":abdatabase"))
+    implementation(project(":abnative"))
 
     implementation(libs.appcompat)
     implementation(libs.material)
 
-    implementation(project(":abdatabase"))
-    implementation(project(":abnative"))
-
     testImplementation(libs.junit)
+    
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
 }
