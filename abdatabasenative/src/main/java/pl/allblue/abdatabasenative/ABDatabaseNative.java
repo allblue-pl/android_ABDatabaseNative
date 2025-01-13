@@ -10,9 +10,9 @@ import java.util.List;
 
 import pl.allblue.abdatabase.ABDatabase;
 import pl.allblue.abdatabase.ColumnInfo;
-import pl.allblue.abdatabase.Result;
+import pl.allblue.abdatabase.DBResult;
 import pl.allblue.abdatabase.SelectColumnType;
-import pl.allblue.abdatabase.Transaction;
+import pl.allblue.abdatabase.DBTransaction;
 import pl.allblue.abnative.ActionsSet;
 import pl.allblue.abnative.NativeApp;
 
@@ -32,7 +32,7 @@ public class ABDatabaseNative
                     (args, resultCallback) -> {
                 self.db.getTableColumnInfos(args.getString("tableName"),
                         args.getInt("transactionId"),
-                        new Result.OnTableColumnInfos() {
+                        new DBResult.OnTableColumnInfos() {
                     @Override
                     public void onError(Exception e) {
                         Log.w("ABDataDatabase", e.getMessage(), e);
@@ -87,7 +87,7 @@ public class ABDatabaseNative
 
             .addNativeCallback("GetTableNames", (args, resultCallback) -> {
                 this.db.getTableNames(args.getInt("transactionId"),
-                        new Result.OnTableNames() {
+                        new DBResult.OnTableNames() {
                     @Override
                     public void onError(Exception e) {
                         Log.w("ABDataDatabase", e.getMessage(), e);
@@ -126,7 +126,7 @@ public class ABDatabaseNative
                     (args, resultCallback) -> {
                 this.db.transaction_Finish(args.getInt("transactionId"),
                         args.getBoolean("commit"),
-                        new Transaction.OnFinish() {
+                        new DBTransaction.OnFinish() {
                     @Override
                     public void onError(Exception e) {
                         Log.w("ABDataDatabase", e.getMessage(), e);
@@ -162,7 +162,7 @@ public class ABDatabaseNative
             .addNativeCallback("Transaction_IsAutocommit",
                     (args, resultCallback) -> {
                 this.db.transaction_IsAutocommit(
-                        new Transaction.OnIsAutocommit() {
+                        new DBTransaction.OnIsAutocommit() {
                     @Override
                     public void onError(Exception e) {
                         Log.w("ABDataDatabase", e.getMessage(), e);
@@ -203,7 +203,7 @@ public class ABDatabaseNative
             .addNativeCallback("Transaction_Start",
                     (args, resultCallback) -> {
                 this.db.transaction_Start(
-                        new Transaction.OnStart() {
+                        new DBTransaction.OnStart() {
                     @Override
                     public void onError(Exception e) {
                         Log.w("ABDataDatabase", e.getMessage(), e);
@@ -251,7 +251,7 @@ public class ABDatabaseNative
                 this.db.query_Execute(args.getString("query"),
                         args.isNull("transactionId") ?
                         null : args.getInt("transactionId"),
-                        new Result.OnResult_ThrowsException() {
+                        new DBResult.OnResult_ThrowsException() {
 
                     @Override
                     public void onError(Exception e) {
@@ -300,7 +300,7 @@ public class ABDatabaseNative
                 this.db.query_Select(args.getString("query"), columnTypes,
                         args.isNull("transactionId") ?
                         null : args.getInt("transactionId"),
-                        new Result.OnSelect() {
+                        new DBResult.OnSelect() {
                     @Override
                     public void onError(Exception e) {
                         Log.w("ABDataDatabase", e.getMessage(), e);
