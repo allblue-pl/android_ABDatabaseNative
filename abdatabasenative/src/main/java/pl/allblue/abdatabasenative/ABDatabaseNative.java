@@ -11,6 +11,8 @@ import java.util.List;
 import pl.allblue.abdatabase.ABDatabase;
 import pl.allblue.abdatabase.ColumnInfo;
 import pl.allblue.abdatabase.DBResult;
+import pl.allblue.abdatabase.IndexColumnInfo;
+import pl.allblue.abdatabase.IndexInfo;
 import pl.allblue.abdatabase.SelectColumnType;
 import pl.allblue.abdatabase.DBTransaction;
 import pl.allblue.abnative.ActionsSet;
@@ -28,6 +30,39 @@ public class ABDatabaseNative
         this.db = db;
 
         this.nativeActions = new ActionsSet()
+            .addNativeCallback("GetIndexColumnInfos",
+                    (args, resultCallback) -> {
+                self.db.getIndexColumnInfos(args.getString("indexName"),
+                        args.getInt("transactionId"), new DBResult.OnIndexColumnInfos() {
+                    @Override
+                    public void onError(Exception e) {
+                        Log.w("ABDataDatabase", e.getMessage(), e);
+                        resultCallback.onError(e);
+                    }
+
+                    @Override
+                    public void onResult(IndexColumnInfo[] indexColumnInfos) {
+                        try {
+                            JSONObject result = new JSONObject();
+
+                            JSONArray indexColumnInfos_Json = new JSONArray();
+                            for (int i = 0; i < indexColumnInfos.length; i++) {
+                                JSONObject indexColumnInfo = new JSONObject();
+                                indexColumnInfo.put("seq", indexColumnInfos[i].getSeq());
+                                indexColumnInfo.put("name", indexColumnInfos[i].getName());
+                                indexColumnInfo.put("desc", indexColumnInfos[i].isDesc());
+
+                                indexColumnInfos_Json.put(indexColumnInfo);
+                            }
+                            result.put("indexColumnInfos", indexColumnInfos_Json);
+
+                            resultCallback.onResult(result);
+                        } catch (JSONException e) {
+                            resultCallback.onError(e);
+                        }
+                    }
+                });
+            })
             .addNativeCallback("GetTableColumnInfos",
                     (args, resultCallback) -> {
                 self.db.getTableColumnInfos(args.getString("tableName"),
@@ -52,9 +87,8 @@ public class ABDatabaseNative
                                 columnInfo.put("notNull", columnInfos[i].isNotNull());
 
                                 columnInfos_Json.put(columnInfo);
-
-                                result.put("columnInfos", columnInfos_Json);
                             }
+                            result.put("columnInfos", columnInfos_Json);
 
                             resultCallback.onResult(result);
                         } catch (JSONException e) {
@@ -63,28 +97,40 @@ public class ABDatabaseNative
                     }
                 });
             })
-//            .addNative("GetTableColumnInfos", (args) -> {
-//                JSONObject result = new JSONObject();
-//
-//                ColumnInfo[] columnInfos = self.db.getTableColumnInfos(
-//                        args.getString("tableName"));
-//
-//                JSONArray columnInfos_Json = new JSONArray();
-//                for (int i = 0; i < columnInfos.length; i++) {
-//                    JSONObject columnInfo = new JSONObject();
-//                    columnInfo.put("name", columnInfos[i].getName());
-//                    columnInfo.put("type", columnInfos[i].getType());
-//                    columnInfo.put("notNull", columnInfos[i].isNotNull());
-//
-//                    columnInfos_Json.put(columnInfo);
-//
-//                    result.put("columnInfos", columnInfos_Json);
-//                    result.put("error", JSONObject.NULL);
-//                }
-//
-//                return result;
-//            })
+        .addNativeCallback("GetTableIndexInfos",
+                (args, resultCallback) -> {
+            self.db.getTableIndexInfos(args.getString("tableName"),
+                    args.getInt("transactionId"),
+                    new DBResult.OnTableIndexInfos() {
+                        @Override
+                        public void onError(Exception e) {
+                            Log.w("ABDataDatabase", e.getMessage(), e);
+                            resultCallback.onError(e);
+                        }
 
+                        @Override
+                        public void onResult(IndexInfo[] indexInfos) {
+                            try {
+                                JSONObject result = new JSONObject();
+
+                                JSONArray indexInfos_Json = new JSONArray();
+                                for (int i = 0; i < indexInfos.length; i++) {
+                                    JSONObject columnInfo = new JSONObject();
+                                    columnInfo.put("name", indexInfos[i].getName());
+                                    columnInfo.put("isPK", indexInfos[i].isPK());
+
+                                    indexInfos_Json.put(columnInfo);
+
+                                    result.put("indexInfos", indexInfos_Json);
+                                }
+
+                                resultCallback.onResult(result);
+                            } catch (JSONException e) {
+                                resultCallback.onError(e);
+                            }
+                        }
+                    });
+            })
             .addNativeCallback("GetTableNames", (args, resultCallback) -> {
                 this.db.getTableNames(args.getInt("transactionId"),
                         new DBResult.OnTableNames() {
