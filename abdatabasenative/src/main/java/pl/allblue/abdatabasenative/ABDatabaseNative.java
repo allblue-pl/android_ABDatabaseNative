@@ -85,6 +85,7 @@ public class ABDatabaseNative
                                 columnInfo.put("name", columnInfos[i].getName());
                                 columnInfo.put("type", columnInfos[i].getType());
                                 columnInfo.put("notNull", columnInfos[i].isNotNull());
+                                columnInfo.put("isPK", columnInfos[i].isPK());
 
                                 columnInfos_Json.put(columnInfo);
                             }
