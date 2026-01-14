@@ -20,4 +20,7 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "ABDatabaseNative"
-include(":abdatabasenative")
+include(":abdatabasenative", ":abdatabase", ":abnative")
+
+project(":abdatabase").projectDir = File(rootProject.projectDir, "../ABDatabase/abdatabase")
+project(":abnative").projectDir = File(rootProject.projectDir, "../ABNative/abnative")
