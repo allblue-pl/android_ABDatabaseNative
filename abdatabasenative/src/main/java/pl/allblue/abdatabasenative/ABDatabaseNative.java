@@ -121,9 +121,9 @@ public class ABDatabaseNative
                                     columnInfo.put("isPK", indexInfos[i].isPK());
 
                                     indexInfos_Json.put(columnInfo);
-
-                                    result.put("indexInfos", indexInfos_Json);
                                 }
+
+                                result.put("indexInfos", indexInfos_Json);
 
                                 resultCallback.onResult(result);
                             } catch (JSONException e) {
